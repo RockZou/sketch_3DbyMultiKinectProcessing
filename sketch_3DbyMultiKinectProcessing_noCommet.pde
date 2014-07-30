@@ -1,4 +1,5 @@
 
+
 import SimpleOpenNI.*;
 
 
@@ -28,10 +29,10 @@ int theY=-20;
 //the current frame number for recording playback
 int curFrame=0;
 
-int thresholdLowA=0;
-int thresholdHighA=5000;
-int thresholdLowB=0;
-int thresholdHighB=5000;
+int thresholdLowA=2000;
+int thresholdHighA=4000;
+int thresholdLowB=2000;
+int thresholdHighB=4000;
 
 Boolean recording=false;
 
@@ -50,6 +51,12 @@ void setup()
   
   cam=new SimpleOpenNI(this);
   
+  // enable depthMap generation 
+  cam.enableDepth();
+   
+  // enable skeleton generation for all joints
+  cam.enableUser();
+  
   if (recording)//if it is recording
   {
     initRecording();
@@ -60,6 +67,8 @@ void setup()
   }
   
   smooth();
+  
+  camera(0,0,0,0,0,-4000,0,1,0);
 }
 
 void draw()
@@ -81,21 +90,43 @@ void draw()
   }
   else //(not recording)
   {
-    context.setPlaybackSpeedPlayer(theSpeed);//theSpeed is controlled by UP and DOWN in the program
-    context.update();
-   
-    context1.setPlaybackSpeedPlayer(theSpeed);
+    
+    context1.setPlaybackSpeedPlayer(1.0);
     context1.update();
+    
+    context.setPlaybackSpeedPlayer(1.0);//theSpeed is controlled by UP and DOWN in the program
+    context.update();
+    
+    cam.update();
+    if (cam.getUsers()!=null)
+    {
+      if(cam.isTrackingSkeleton(1))
+      {
+        println("is tracking user 0");
+        PVector jointPos = new PVector();
+        cam.getJointPositionSkeleton(1,SimpleOpenNI.SKEL_HEAD,jointPos);
+        println("head x is:"+jointPos.x);
+        println("head y is:"+jointPos.y);
+        camera(-jointPos.x/2.0,0,0,0,0,-4000,0,1,0);
+        stroke(255);
+        strokeWeight(10);
+        noFill();
+        box(300);
+      }
+    }
     
     background(0);
     
+    /*
     if (xEye>500)
     xEyePlus=-5;
     else if (xEye<-500)
     xEyePlus=5;
     xEye+=xEyePlus;
-    camera(xEye,0,100,0,0,-2000,0,1,0);
+    //camera(xEye,0,100,0,0,-2000,0,1,0);
     println("the Eye x-position is" + xEye);
+    */
+    
     //translate(width/2, height/2, 0);
     rotateX(rotX);
     rotateY(rotY);
@@ -114,8 +145,8 @@ void draw()
   }
   
   // draw the kinect cam in the frame
-  strokeWeight(3);
-  context.drawCamFrustum();
+  //strokeWeight(3);
+  //context.drawCamFrustum();
 }
 
 //key board interface
@@ -136,9 +167,14 @@ void keyPressed()
   }
   break;
   case ' ':
+  /*
   isPlaying=!isPlaying;
   context.playbackPlay(isPlaying);
   context1.playbackPlay(isPlaying);
+  */
+  
+    context.seekPlayer(1011);
+    context1.seekPlayer(649);
   break;
   case CODED:
     switch(keyCode)
@@ -178,3 +214,21 @@ void keyPressed()
 
 
 
+void onNewUser(SimpleOpenNI curContext, int userId)
+{
+  println("onNewUser - userId: " + userId);
+  println("\tstart tracking skeleton");
+  
+  curContext.startTrackingSkeleton(userId);
+}
+
+void onLostUser(SimpleOpenNI curContext, int userId)
+{
+  println("onLostUser - userId: " + userId);
+}
+
+
+void onVisibleUser(SimpleOpenNI curContext, int userId)
+{
+  //println("onVisibleUser - userId: " + userId);
+}
