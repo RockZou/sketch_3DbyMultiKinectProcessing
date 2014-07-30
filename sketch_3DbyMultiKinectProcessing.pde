@@ -181,10 +181,7 @@ void draw()
     }//end for y
     endShape();
     /**end drawing the point map****/
-    hint(DISABLE_DEPTH_TEST);
-    stroke(255);
-    println(context.curFramePlayer());
-    hint(ENABLE_DEPTH_TEST);
+
   }
   else //(not recording)
   {
@@ -214,8 +211,7 @@ void draw()
     context1.setPlaybackSpeedPlayer(theSpeed);
     context1.update();
     
-    
-    background(0,0,0);
+    background(0);
 
 
     //to postion the first point cloud
@@ -376,6 +372,16 @@ void keyPressed()
   
   switch(key)
   {
+    
+  case 'q':
+  case 'Q':
+  if(recording)
+  {
+    output.flush();
+    output.close();
+    exit();  
+  }
+  break;
   case ' ':
   isPlaying=!isPlaying;
   context.playbackPlay(isPlaying);
