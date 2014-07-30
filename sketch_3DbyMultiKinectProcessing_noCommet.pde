@@ -36,18 +36,20 @@ int thresholdHighB=4000;
 
 Boolean recording=false;
 
-String recordingName="veronika1A";
+String recordingName="veronikaA";
 String recordPath=recordingName+".oni";//.oni is a openNI file
 
 //this is to load videos -- two video files from two cameras to be merged together
 String videoPath=recordingName+".oni";//test.oni
-String videoPath1="veronika1B.oni";
+String videoPath1="veronikaB.oni";
 
 void setup()
 {
   size(1024,768,P3D);//P3D is the wrapper for renderer OpenGL
   
-  output=createWriter(recordingName+".txt");
+  //output=createWriter(recordingName+".txt");
+  
+  readFiles();
   
   cam=new SimpleOpenNI(this);
   
@@ -91,20 +93,39 @@ void draw()
   else //(not recording)
   {
     
+    context.setPlaybackSpeedPlayer(1.0);//theSpeed is controlled by UP and DOWN in the program
+    context.update();
+    indexA=context.curFramePlayer();
+    indexB=context1.curFramePlayer();
+    println(veronikaA.get(indexA));
+    while(veronikaB.get(indexB)<veronikaA.get(indexA)-theTimeDiff)
+    {
+      indexB++;    
+    }
+    println(veronikaB.get(indexB));
+    
+    context1.seekPlayer(indexB);
     context1.setPlaybackSpeedPlayer(1.0);
     context1.update();
     
-    context.setPlaybackSpeedPlayer(1.0);//theSpeed is controlled by UP and DOWN in the program
-    context.update();
     
     cam.update();
-    if (cam.getUsers()!=null)
+    
+    
+    hint(DISABLE_DEPTH_TEST);
+    image(cam.depthImage(),0,0,128,96);
+    image(cam.userImage(),0,0,128,96);
+    hint(ENABLE_DEPTH_TEST);
+    
+    int[] userList = cam.getUsers();
+    for(int i=0;i<userList.length;i++)
     {
-      if(cam.isTrackingSkeleton(1))
+      println("the i is:"+i);
+      if(cam.isTrackingSkeleton(userList[i]))
       {
-        println("is tracking user 0");
+        println("isTracking user "+i);
         PVector jointPos = new PVector();
-        cam.getJointPositionSkeleton(1,SimpleOpenNI.SKEL_HEAD,jointPos);
+        cam.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_HEAD,jointPos);
         println("head x is:"+jointPos.x);
         println("head y is:"+jointPos.y);
         camera(-jointPos.x/2.0,0,0,0,0,-4000,0,1,0);
@@ -173,8 +194,8 @@ void keyPressed()
   context1.playbackPlay(isPlaying);
   */
   
-    context.seekPlayer(1011);
-    context1.seekPlayer(649);
+    context.seekPlayer(694);
+    context1.seekPlayer(399);
   break;
   case CODED:
     switch(keyCode)
