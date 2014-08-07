@@ -18,13 +18,13 @@ float        rotX = radians(180);  // by default rotate the hole scene 180deg ar
                                    // the data from openni comes upside down
 float        rotY = radians(0);
 PShape       pointCloud;
-int          steps = 2;//the increment for skipping pixel in case it gets slower
+int          steps = 1;//the increment for skipping pixel in case it gets slower
 float        theSpeed=1.0;//the speed for recording playback
 
 //two point clouds to merge both
-int theZ=5070;
-int theX=130;
-int theY=-20;
+int theZ=5050;
+int theX=20;
+int theY=-10;
 
 //the current frame number for recording playback
 int curFrame=0;
@@ -112,9 +112,9 @@ void draw()
     cam.update();
     
     
-    hint(DISABLE_DEPTH_TEST);
-    image(cam.depthImage(),0,0,128,96);
-    image(cam.userImage(),0,0,128,96);
+     hint(DISABLE_DEPTH_TEST);
+    image(cam.depthImage(),-width,-height,128,96);
+    image(cam.userImage(),-width,-height,128,96);
     hint(ENABLE_DEPTH_TEST);
     
     int[] userList = cam.getUsers();
@@ -128,7 +128,7 @@ void draw()
         cam.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_HEAD,jointPos);
         println("head x is:"+jointPos.x);
         println("head y is:"+jointPos.y);
-        camera(-jointPos.x/2.0,0,0,0,0,-4000,0,1,0);
+        camera(-jointPos.x,0,0,0,0,-4000,0,1,0);
         stroke(255);
         strokeWeight(10);
         noFill();
