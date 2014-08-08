@@ -1,24 +1,17 @@
-BufferedReader readerA;
-BufferedReader readerB;
-String lineA,lineB;
-IntList veronikaA;
-IntList veronikaB;
 
-int indexA;
-int lenA;
+void writeFiles()
+{
 
-int indexB;
-int lenB;
+}
 
-int theTimeDiff;
 
 void readFiles()
 {
   // Open the file from the createWriter() example
   readerA = createReader("veronikaA.txt"); 
   readerB = createReader("veronikaB.txt");
-  veronikaA=new IntList();
-  veronikaB=new IntList();
+  playerA=new IntList();
+  playerB=new IntList();
   do
   {
     try {
@@ -38,12 +31,12 @@ void readFiles()
   {
     String pieces = lineA;
     int theNum=int(pieces);
-    veronikaA.append(theNum);
+    playerA.append(theNum);
     //println(theNum);
   }
   }while(lineA!=null);
   
-  println("veronikaA is:"+veronikaA.size()+"  "+veronikaA.get(veronikaA.size()-2));
+  println("veronikaA is:"+playerA.size()+"  "+playerA.get(playerA.size()-2));
   
     do
   {
@@ -64,11 +57,12 @@ void readFiles()
   {
     String pieces = lineB;
     int theNum=int(pieces);
-    veronikaB.append(theNum);
+    playerB.append(theNum);
     //println(theNum);
   }
   }while(lineB!=null);
-  println("veronikaB is:"+veronikaB.get(veronikaB.size()-2));
+  println("veronikaB is:"+playerB.get(playerB.size()-2));
   
-  theTimeDiff=veronikaA.get(692)-veronikaB.get(399);
+  theTimeDiff=playerA.get(692)-playerB.get(399);
+  println("the Time difference is: "+theTimeDiff);
 } 

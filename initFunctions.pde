@@ -1,3 +1,17 @@
+BufferedReader readerA;
+BufferedReader readerB;
+String lineA,lineB;
+IntList playerA;
+IntList playerB;
+
+int indexA;
+int lenA;
+
+int indexB;
+int lenB;
+
+int theTimeDiff;
+
 void initRecording()
 {  
     frameRate(15);

@@ -5,7 +5,9 @@ import SimpleOpenNI.*;
 
 SimpleOpenNI context;
 SimpleOpenNI context1;
-SimpleOpenNI cam;
+
+
+Boolean kinectConnected=false;
 
 PrintWriter output;
 
@@ -45,32 +47,43 @@ String videoPath1="veronikaB.oni";
 
 void setup()
 {
-  size(1024,768,P3D);//P3D is the wrapper for renderer OpenGL
+  size(displayWidth,displayHeight,P3D);//P3D is the wrapper for renderer OpenGL
   
-  //output=createWriter(recordingName+".txt");
+  if (frame != null) {
+    frame.setResizable(true);
+  }
   
-  readFiles();
-  
-  cam=new SimpleOpenNI(this);
-  
-  // enable depthMap generation 
-  cam.enableDepth();
-   
-  // enable skeleton generation for all joints
-  cam.enableUser();
+  SimpleOpenNI.start();
+  StrVector strList = new StrVector();
+  SimpleOpenNI.deviceNames(strList);
+  if (strList.size()>0)
+  {
+    kinectConnected=true;
+    println("kinect is connected");
+  }
   
   if (recording)//if it is recording
   {
+    output=createWriter(recordingName+".txt");
     initRecording();
+    
+    
+    smooth();
+  
+    camera(0,0,0,0,0,-4000,0,1,0);
   }
   else//not recording, playingback
   {
+    if (kinectConnected)
+      initHeadTrack();
+    else
+      initPeasyCam();
+      
+    readFiles();
     initPlayback();
+    
   }
   
-  smooth();
-  
-  camera(0,0,0,0,0,-4000,0,1,0);
 }
 
 void draw()
@@ -82,63 +95,53 @@ void draw()
     output.println(millis());
     background(0);
 
+/********
     translate(width/2, height/2, 0);
     rotateX(rotX);
     rotateY(rotY);
     scale(zoomF);
-    
+*********/
     drawFirstMap();
 
   }
   else //(not recording)
   {
     
+    
+    scale(1,-1,1);
+    background(0);
+    
+    camera();
+    
+    hint(DISABLE_DEPTH_TEST);
+    image(cam.depthImage(),width-256,height-192,256,192);
+    image(cam.userImage(),width-256,height-192,256,192);
+    hint(ENABLE_DEPTH_TEST);
+    
+    if (kinectConnected)
+    headTrack();
+    
     context.setPlaybackSpeedPlayer(1.0);//theSpeed is controlled by UP and DOWN in the program
     context.update();
     indexA=context.curFramePlayer();
     indexB=context1.curFramePlayer();
-    println(veronikaA.get(indexA));
-    while(veronikaB.get(indexB)<veronikaA.get(indexA)-theTimeDiff)
+    //println("the A is "+playerA.get(indexA));
+    
+    //if (playerB.get(indexB)>playerA.get(indexA)-theTimeDiff+10000)
+    //indexB=1;
+    
+    while(playerB.get(indexB)<playerA.get(indexA)-theTimeDiff)
     {
-      indexB++;    
+      indexB++;
     }
-    println(veronikaB.get(indexB));
+    //println("the B is "+indexB+"the playerB(IndexB)is "+playerB.get(indexB));
     
     context1.seekPlayer(indexB);
     context1.setPlaybackSpeedPlayer(1.0);
     context1.update();
     
-    
-    cam.update();
-    
-    
-     hint(DISABLE_DEPTH_TEST);
-    image(cam.depthImage(),-width,-height,128,96);
-    image(cam.userImage(),-width,-height,128,96);
-    hint(ENABLE_DEPTH_TEST);
-    
-    int[] userList = cam.getUsers();
-    for(int i=0;i<userList.length;i++)
-    {
-      println("the i is:"+i);
-      if(cam.isTrackingSkeleton(userList[i]))
-      {
-        println("isTracking user "+i);
-        PVector jointPos = new PVector();
-        cam.getJointPositionSkeleton(userList[i],SimpleOpenNI.SKEL_HEAD,jointPos);
-        println("head x is:"+jointPos.x);
-        println("head y is:"+jointPos.y);
-        camera(-jointPos.x,0,0,0,0,-4000,0,1,0);
-        stroke(255);
-        strokeWeight(10);
-        noFill();
-        box(300);
-      }
-    }
-    
-    background(0);
-    
-    /*
+
+    /* 
     if (xEye>500)
     xEyePlus=-5;
     else if (xEye<-500)
@@ -146,23 +149,25 @@ void draw()
     xEye+=xEyePlus;
     //camera(xEye,0,100,0,0,-2000,0,1,0);
     println("the Eye x-position is" + xEye);
-    */
+    ****/
     
+    
+    /******
     //translate(width/2, height/2, 0);
     rotateX(rotX);
     rotateY(rotY);
     //scale(zoomF);
+    *******/
     
       drawFirstMap();
        
-    pushMatrix();
-    translate(theX,theY,theZ);
-    rotateY(PI);
+      pushMatrix();
+        translate(theX,theY,theZ);
+        rotateY(PI);
+        drawSecondMap();
     
-      drawSecondMap();
-    
-    popMatrix();//end translate xyz and rotateY
-    
+      popMatrix();//end translate xyz and rotateY
+  
   }
   
   // draw the kinect cam in the frame
@@ -195,7 +200,10 @@ void keyPressed()
   */
   
     context.seekPlayer(694);
+    context.update();
+    
     context1.seekPlayer(399);
+    context1.update();
   break;
   case CODED:
     switch(keyCode)
